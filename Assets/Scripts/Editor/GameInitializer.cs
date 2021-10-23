@@ -9,7 +9,7 @@ namespace Editor
     {
         private const float INIT_BUTTON_HEIGHT = 20f;
         
-        private static void Initialize()
+        public static void Initialize()
         {
             GameStateManager.Initialize();
             AudioPlayer.Initialize();

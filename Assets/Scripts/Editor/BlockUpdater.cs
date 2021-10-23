@@ -39,8 +39,6 @@ namespace Editor
                     animStates[x, y] = 0f;
                 }
             }
-            
-            DrawBlocks(0);
         }
 
         public static void UpdateBlocks(float dt)

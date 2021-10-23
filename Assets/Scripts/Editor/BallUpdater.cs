@@ -9,7 +9,7 @@ namespace Editor
     public static class BallUpdater
     {
         private static Vector2 position = new Vector2(-100, -100);
-        private static Vector2 moveDir = Vector2.zero;
+        private static Vector2 moveDir = new Vector2(1, -1).normalized;
 
         private const float BALL_RADIUS = 7f;
         private const float MOVE_SPEED = 300f;

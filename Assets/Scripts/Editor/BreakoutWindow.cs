@@ -1,23 +1,29 @@
 using UnityEditor;
+using UnityEngine;
 
 namespace Editor
 {
     public class BreakoutWindow : EditorWindow
     {
         private static float preTime;
+        private static float dt;
         
-        [MenuItem("Tools/BreakoutWindow")]
+        [MenuItem("Window/BreakoutWindow")]
         private static void ShowWindow()
         {
             preTime = (float) EditorApplication.timeSinceStartup;
-            GetWindow<BreakoutWindow>();
+            
+            var window = GetWindow<BreakoutWindow>();
+            window.titleContent = new GUIContent("Breakout");
+            
+            GameInitializer.Initialize();
         }
         
         private void OnGUI()
         {
             // 経過時間の更新
             var currentTime = (float) EditorApplication.timeSinceStartup;
-            var dt = currentTime - preTime;
+            dt = currentTime - preTime;
             preTime = currentTime;
             
             LayoutManager.CheckWindowSize(position);
@@ -26,16 +32,21 @@ namespace Editor
                 MessageShower.ShowTopMessage();
                 return;
             }
+
+            var windowSize = position.size;
             
             BlockUpdater.UpdateBlocks(dt);
-            BarUpdater.UpdateBar(position.size, dt);
-            BallUpdater.UpdateBall(position.size, dt);
-            WindowEdgeDrawer.DrawWindowFrame(position.size, dt);
+            BarUpdater.UpdateBar(windowSize, dt);
+            BallUpdater.UpdateBall(windowSize, dt);
+            WindowEdgeDrawer.DrawWindowFrame(windowSize, dt);
             MessageShower.ShowCenterMessage();
             
-            GameInitializer.DrawInitializeButton(position.size);
+            GameInitializer.DrawInitializeButton(windowSize);
             GameInitializer.CheckPlayGame();
-            
+        }
+
+        private void Update()
+        {
             Repaint();
         }
     }
