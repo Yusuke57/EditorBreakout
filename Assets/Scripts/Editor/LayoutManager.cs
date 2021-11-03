@@ -25,7 +25,7 @@ namespace Editor
         /// <summary>
         /// ウィンドウサイズが適切かをチェックする
         /// </summary>
-        public static void CheckWindowSize(Rect windowArea)
+        public static bool CheckWindowSize(Rect windowArea)
         {
             var isValid = IsValidWindow(windowArea);
             if (isValid && GameStateManager.CurrentGameState == GameState.LayoutError)
@@ -36,6 +36,8 @@ namespace Editor
             {
                 GameStateManager.Pause(GameState.LayoutError);
             }
+
+            return isValid;
         }
 
         /// <summary>

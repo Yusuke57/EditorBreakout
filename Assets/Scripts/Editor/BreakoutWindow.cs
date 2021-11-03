@@ -6,7 +6,6 @@ namespace Editor
     public class BreakoutWindow : EditorWindow
     {
         private static float preTime;
-        private static float dt;
         
         [MenuItem("Window/BreakoutWindow")]
         private static void ShowWindow()
@@ -19,34 +18,48 @@ namespace Editor
             GameInitializer.Initialize();
         }
         
+        /// <summary>
+        /// 描画
+        /// </summary>
         private void OnGUI()
         {
-            // 経過時間の更新
-            var currentTime = (float) EditorApplication.timeSinceStartup;
-            dt = currentTime - preTime;
-            preTime = currentTime;
-            
-            LayoutManager.CheckWindowSize(position);
-            if (GameStateManager.IsPause)
+            if (!LayoutManager.CheckWindowSize(position))
             {
                 MessageShower.ShowTopMessage();
                 return;
             }
 
+            BlockUpdater.DrawBlocks();
+            BarUpdater.DrawBar();
+            BallUpdater.DrawBall();
+            WindowEdgeUpdater.DrawWindowFrame();
+            MessageShower.ShowCenterMessage();
+            
+            GameInitializer.DrawInitializeButton(position.size);
+            GameInitializer.CheckPlayGame();
+        }
+
+        /// <summary>
+        /// ロジック
+        /// </summary>
+        private void Update()
+        {
+            if (!LayoutManager.CheckWindowSize(position))
+            {
+                MessageShower.ShowTopMessage();
+                return;
+            }
+            
             var windowSize = position.size;
+            var currentTime = (float) EditorApplication.timeSinceStartup;
+            var dt = currentTime - preTime;
+            preTime = currentTime;
             
             BlockUpdater.UpdateBlocks(dt);
             BarUpdater.UpdateBar(windowSize, dt);
             BallUpdater.UpdateBall(windowSize, dt);
-            WindowEdgeDrawer.DrawWindowFrame(windowSize, dt);
-            MessageShower.ShowCenterMessage();
+            WindowEdgeUpdater.UpdateWindowEdges(windowSize, dt);
             
-            GameInitializer.DrawInitializeButton(windowSize);
-            GameInitializer.CheckPlayGame();
-        }
-
-        private void Update()
-        {
             Repaint();
         }
     }

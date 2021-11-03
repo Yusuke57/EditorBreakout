@@ -8,9 +8,16 @@ namespace Editor
     /// <summary>
     /// ウィンドウ枠の描画
     /// </summary>
-    public static class WindowEdgeDrawer
+    public static class WindowEdgeUpdater
     {
-        private static Dictionary<WindowEdge, float> edgeAnimStates = new Dictionary<WindowEdge, float>();
+        private static Dictionary<WindowEdge, float> edgeAnimStates = new Dictionary<WindowEdge, float>()
+        {
+            {WindowEdge.Top, 0},
+            {WindowEdge.Right, 0},
+            {WindowEdge.Bottom, 0},
+            {WindowEdge.Left, 0},
+        };
+        private static Dictionary<Rect, Color> edgeDrawDataList = new Dictionary<Rect, Color>();
         
         private const float EDGE_ANIM_WIDTH = 1f;
         private const float EDGE_ANIM_DURATION = 0.3f;
@@ -24,11 +31,27 @@ namespace Editor
                 {WindowEdge.Bottom, 0},
                 {WindowEdge.Left, 0},
             };
+            
+            edgeDrawDataList = new Dictionary<Rect, Color>();
+        }
 
-            var edges = edgeAnimStates.Keys.ToList();
+        /// <summary>
+        /// 枠を更新
+        /// </summary>
+        public static void UpdateWindowEdges(Vector2 windowSize, float dt)
+        {
+            edgeDrawDataList.Clear();
+            
+            var edges = new List<WindowEdge>(edgeAnimStates.Keys);
             foreach (var edge in edges)
             {
-                edgeAnimStates[edge] = 0f;
+                edgeAnimStates[edge] -= dt / EDGE_ANIM_DURATION;
+                if(edgeAnimStates[edge] <= 0) continue;
+
+                var rect = GetEdgeRect(edge, windowSize);
+                var alpha = Mathf.Clamp01(edgeAnimStates[edge]);
+                var color = new Color(0.5f, 0.5f, 0.5f, alpha);
+                edgeDrawDataList.Add(rect, color);
             }
         }
         
@@ -62,17 +85,11 @@ namespace Editor
         /// <summary>
         /// ウィンドウ枠を表示
         /// </summary>
-        public static void DrawWindowFrame(Vector2 windowSize, float dt)
+        public static void DrawWindowFrame()
         {
-            var edges = edgeAnimStates.Keys.ToList();
-            foreach (var edge in edges)
+            foreach (var edgeDrawData in edgeDrawDataList)
             {
-                edgeAnimStates[edge] -= dt / EDGE_ANIM_DURATION;
-                if (edgeAnimStates[edge] < 0) continue;
-
-                var rect = GetEdgeRect(edge, windowSize);
-                var color = new Color(0.7f, 0.7f, 0.7f, edgeAnimStates[edge]);
-                EditorGUI.DrawRect(rect, color);
+                EditorGUI.DrawRect(edgeDrawData.Key, edgeDrawData.Value);
             }
         }
 

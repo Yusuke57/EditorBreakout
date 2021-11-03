@@ -12,6 +12,10 @@ namespace Editor
         private static float barLeftPos = -BAR_WIDTH / 2;
         private static float barRightPos = BAR_WIDTH / 2;
         private static float barPosY;
+        private static float windowWidth;
+
+        private static float mousePosX;
+        
         private static Queue<float> barLeftPosQueue = new Queue<float>();
         private const int QUEUE_SIZE = 16;
 
@@ -30,39 +34,29 @@ namespace Editor
             barRightPos = BAR_WIDTH / 2;
         }
 
+        #region Logic
+        
         public static void UpdateBar(Vector2 windowSize, float dt)
         {
-            MoveBar(windowSize);
-            DrawBar(windowSize, dt);
+            windowWidth = windowSize.x;
+            
+            MoveBar();
+
+            barPosY = LayoutManager.GetBarPosY(windowSize);
+            collisionEffectState = Mathf.Max(0, collisionEffectState - dt / COLLISION_EFFECT_DURATION);
         }
 
         /// <summary>
         /// バーの移動
         /// </summary>
-        private static void MoveBar(Vector2 windowSize)
+        private static void MoveBar()
         {
-            var mousePosX = Event.current.mousePosition.x;
-            mousePosX = Mathf.Clamp(mousePosX, BAR_WIDTH / 2, windowSize.x - BAR_WIDTH / 2);
+            mousePosX = Mathf.Clamp(mousePosX, BAR_WIDTH / 2, windowWidth - BAR_WIDTH / 2);
             barLeftPos = mousePosX - BAR_WIDTH / 2 + BAR_ROUND_SIZE;
             barRightPos = mousePosX + BAR_WIDTH / 2 - BAR_ROUND_SIZE;
-            barPosY = LayoutManager.GetBarPosY(windowSize);
 
             if(barLeftPosQueue.Count >= QUEUE_SIZE) barLeftPosQueue.Dequeue();
             barLeftPosQueue.Enqueue(barLeftPos);
-        }
-
-        /// <summary>
-        /// バーを描画
-        /// </summary>
-        private static void DrawBar(Vector2 windowSize, float dt)
-        {
-            collisionEffectState = Mathf.Max(0, collisionEffectState - dt / COLLISION_EFFECT_DURATION);
-            GUI.color = Color.Lerp(barDefaultColor, barCollisionColor, collisionEffectState);
-            
-            EditorGUI.BeginDisabledGroup(true);
-            EditorGUI.MinMaxSlider(new Rect(-BAR_ROUND_SIZE, barPosY, windowSize.x + BAR_ROUND_SIZE * 2, 10),
-                new GUIContent(), ref barLeftPos, ref barRightPos, 0, windowSize.x);
-            EditorGUI.EndDisabledGroup();
         }
 
         /// <summary>
@@ -97,5 +91,26 @@ namespace Editor
 
             return diff / posArray.Length;
         }
+
+        #endregion
+
+        #region Drawing
+
+        /// <summary>
+        /// バーを描画
+        /// </summary>
+        public static void DrawBar()
+        {
+            GUI.color = Color.Lerp(barDefaultColor, barCollisionColor, collisionEffectState);
+
+            EditorGUI.BeginDisabledGroup(true);
+            EditorGUI.MinMaxSlider(new Rect(-BAR_ROUND_SIZE, barPosY, windowWidth + BAR_ROUND_SIZE * 2, 10),
+                new GUIContent(), ref barLeftPos, ref barRightPos, 0, windowWidth);
+            EditorGUI.EndDisabledGroup();
+
+            mousePosX = Event.current.mousePosition.x;
+        }
+
+        #endregion
     }
 }

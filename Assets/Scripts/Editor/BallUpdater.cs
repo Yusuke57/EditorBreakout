@@ -19,24 +19,12 @@ namespace Editor
             moveDir = new Vector2(1, -1).normalized;
         }
 
+        #region Logic
+
         /// <summary>
         /// ボールを毎フレーム更新
         /// </summary>
         public static void UpdateBall(Vector2 windowSize, float dt)
-        {
-            UpdateBallPos(windowSize, dt);
-            DrawBall(position, BALL_RADIUS);
-
-            if (GameStateManager.CurrentGameState == GameState.Playing && IsGameOver())
-            {
-                GameStateManager.OnGameOver();
-            }
-        }
-
-        /// <summary>
-        /// ボールの位置を更新
-        /// </summary>
-        private static void UpdateBallPos(Vector2 windowSize, float dt)
         {
             if (GameStateManager.CurrentGameState == GameState.Ready)
             {
@@ -45,6 +33,7 @@ namespace Editor
             else if (GameStateManager.CurrentGameState == GameState.Playing)
             {
                 position = GetMovedBallPos(windowSize, dt);
+                if (IsGameOver()) GameStateManager.OnGameOver();
             }
         }
 
@@ -73,16 +62,6 @@ namespace Editor
         }
 
         /// <summary>
-        /// ボール（Toggle）を描画
-        /// </summary>
-        private static void DrawBall(Vector2 pos, float ballRadius)
-        {
-            GUI.color = Color.white;
-            var rect = new Rect(pos.x - ballRadius, pos.y - ballRadius, ballRadius * 2, ballRadius * 2);
-            EditorGUI.Toggle(rect, GameStateManager.CurrentGameState == GameState.Clear);
-        }
-
-        /// <summary>
         /// ゲームオーバー判定
         /// </summary>
         private static bool IsGameOver()
@@ -90,5 +69,21 @@ namespace Editor
             // バーより少し下に行ったらゲームオーバー
             return position.y > BarUpdater.GetBarRect().yMax + 40;
         }
+        
+        #endregion
+
+        #region Drawing
+
+        /// <summary>
+        /// ボール（Toggle）を描画
+        /// </summary>
+        public static void DrawBall()
+        {
+            GUI.color = Color.white;
+            var rect = new Rect(position.x - BALL_RADIUS, position.y - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2);
+            EditorGUI.Toggle(rect, GameStateManager.CurrentGameState == GameState.Clear);
+        }
+
+        #endregion
     }
 }

@@ -16,7 +16,7 @@ namespace Editor
             BlockUpdater.Initialize();
             BarUpdater.Initialize();
             BallUpdater.Initialize();
-            WindowEdgeDrawer.Initialize();
+            WindowEdgeUpdater.Initialize();
         }
 
         public static void DrawInitializeButton(Vector2 windowSize)

@@ -5,10 +5,13 @@ namespace Editor
 {
     /// <summary>
     /// ブロックの更新
+    /// [blockColorDataの要素数] x [blockColorDataの要素数] のブロックを配置する
     /// </summary>
     public static class BlockUpdater
     {
-        private static readonly Color[] blockColors = new Color[]
+        private const int BLOCK_COUNT_ROW = 8;
+        
+        private static readonly Color[] blockColorData = new Color[BLOCK_COUNT_ROW]
         {
             new Color(1f, 0.4f, 0.3f),
             new Color(1f, 0.7f, 0.3f),
@@ -20,8 +23,10 @@ namespace Editor
             new Color(0.9f, 0.5f, 0.7f),
         };
 
-        private static readonly bool[,] brokenStates = new bool[blockColors.Length, blockColors.Length];
-        private static readonly float[,] animStates = new float[blockColors.Length, blockColors.Length];
+        
+        private static readonly bool[,] brokenStates = new bool[BLOCK_COUNT_ROW, BLOCK_COUNT_ROW];
+        private static readonly float[,] animStates = new float[BLOCK_COUNT_ROW, BLOCK_COUNT_ROW];
+        private static readonly Color[,] blockColors = new Color[BLOCK_COUNT_ROW, BLOCK_COUNT_ROW];
 
         private static GameState preGameState = GameState.Ready;
         
@@ -30,10 +35,9 @@ namespace Editor
 
         public static void Initialize()
         {
-            var blockColorCount = blockColors.Length;
-            for (var y = 0; y < blockColorCount; y++)
+            for (var y = 0; y < BLOCK_COUNT_ROW; y++)
             {
-                for (var x = 0; x < blockColorCount; x++)
+                for (var x = 0; x < BLOCK_COUNT_ROW; x++)
                 {
                     brokenStates[x, y] = false;
                     animStates[x, y] = 0f;
@@ -41,46 +45,32 @@ namespace Editor
             }
         }
 
+        #region Logic
+        
         public static void UpdateBlocks(float dt)
         {
-            DrawBlocks(dt);
+            UpdateBlockColors(dt);
+        }
+
+        /// <summary>
+        /// ブロックの色を更新
+        /// </summary>
+        /// <param name="dt"></param>
+        private static void UpdateBlockColors(float dt)
+        {
+            for (var y = 0; y < BLOCK_COUNT_ROW; y++)
+            {
+                for (var x = 0; x < BLOCK_COUNT_ROW; x++)
+                {
+                    blockColors[x, y] = GetBlockColor(x, y, dt);
+                }
+            }
+
             preGameState = GameStateManager.CurrentGameState;
         }
 
         /// <summary>
-        /// 全ブロックの描画
-        /// </summary>
-        private static void DrawBlocks(float dt)
-        {
-            var blockColorCount = blockColors.Length;
-
-            EditorGUILayout.Space(LayoutManager.BLOCK_AREA_PADDING_TOP);
-            for (var y = 0; y < blockColorCount; y++)
-            {
-                EditorGUILayout.BeginHorizontal();
-                GUILayout.Space(LayoutManager.BLOCK_AREA_PADDING_SIDE);
-
-                for (var x = 0; x < blockColorCount; x++)
-                {
-                    DrawBlock(x, y, dt);
-                }
-
-                GUILayout.Space(LayoutManager.BLOCK_AREA_PADDING_SIDE);
-                EditorGUILayout.EndHorizontal();
-            }
-        }
-
-        /// <summary>
-        /// ブロックの描画
-        /// </summary>
-        private static void DrawBlock(int x, int y, float dt)
-        {
-            GUI.color = GetBlockColor(x, y, dt);
-            GUILayout.Button("");
-        }
-
-        /// <summary>
-        /// ブロックの色を取得
+        /// ブロックの色を計算
         /// </summary>
         private static Color GetBlockColor(int x, int y, float dt)
         {
@@ -88,14 +78,14 @@ namespace Editor
             switch (currentGameState)
             {
                 case GameState.Clear:
-                    if (IsChangedGameState()) animStates[x, y] = x + y;
+                    if (currentGameState != preGameState) animStates[x, y] = x + y;
 
                     animStates[x, y] += dt * 5;
                     var isColorful = ((int) animStates[x, y]) % 3 == 0;
                     return isColorful ? GetDefaultColor(x, y) : new Color(1, 1, 1, 0);
                 
                 case GameState.GameOver:
-                    if (IsChangedGameState()) animStates[x, y] = 1f + y;
+                    if (currentGameState != preGameState) animStates[x, y] = 1f + y;
 
                     if (brokenStates[x, y]) return Color.clear;
 
@@ -112,22 +102,14 @@ namespace Editor
                     return GetDefaultColor(x, y);
             }
         }
-
-        /// <summary>
-        /// ゲーム状態が変わったか
-        /// </summary>
-        private static bool IsChangedGameState()
-        {
-            return GameStateManager.CurrentGameState != preGameState;
-        }
         
         /// <summary>
         /// ブロックのデフォルト色を取得
         /// </summary>
         private static Color GetDefaultColor(int x, int y)
         {
-            var colorIdx = (x + y) % blockColors.Length;
-            return blockColors[colorIdx];
+            var colorIdx = (x + y) % blockColorData.Length;
+            return blockColorData[colorIdx];
         }
 
         /// <summary>
@@ -170,17 +152,16 @@ namespace Editor
         /// </summary>
         public static Rect[,] GetBlockRects(Vector2 windowSize)
         {
-            var blockColorCount = blockColors.Length;
-            var blockRects = new Rect[blockColorCount, blockColorCount];
+            var blockRects = new Rect[BLOCK_COUNT_ROW, BLOCK_COUNT_ROW];
 
             var paddingSide = LayoutManager.BLOCK_AREA_PADDING_SIDE;
             var paddingTop = LayoutManager.BLOCK_AREA_PADDING_TOP;
-            var blockWidth = (windowSize.x - paddingSide * 2) / blockColorCount;
+            var blockWidth = (windowSize.x - paddingSide * 2) / BLOCK_COUNT_ROW;
             var blockHeight = 21;
 
-            for (var y = 0; y < blockColorCount; y++)
+            for (var y = 0; y < BLOCK_COUNT_ROW; y++)
             {
-                for (var x = 0; x < blockColorCount; x++)
+                for (var x = 0; x < BLOCK_COUNT_ROW; x++)
                 {
                     if (brokenStates[x, y]) continue;
 
@@ -192,5 +173,41 @@ namespace Editor
 
             return blockRects;
         }
+
+        #endregion
+
+        #region Drawing
+        
+        /// <summary>
+        /// 全ブロックの描画
+        /// </summary>
+        public static void DrawBlocks()
+        {
+            EditorGUILayout.Space(LayoutManager.BLOCK_AREA_PADDING_TOP);
+            for (var y = 0; y < BLOCK_COUNT_ROW; y++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Space(LayoutManager.BLOCK_AREA_PADDING_SIDE);
+
+                for (var x = 0; x < BLOCK_COUNT_ROW; x++)
+                {
+                    DrawBlock(x, y);
+                }
+
+                GUILayout.Space(LayoutManager.BLOCK_AREA_PADDING_SIDE);
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+
+        /// <summary>
+        /// ブロックの描画
+        /// </summary>
+        private static void DrawBlock(int x, int y)
+        {
+            GUI.color = blockColors[x, y];
+            GUILayout.Button("");
+        }
+
+        #endregion
     }
 }

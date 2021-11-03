@@ -103,7 +103,7 @@ namespace Editor
             {
                 nextPos.x = ballRadius * 2 - nextPos.x;
                 moveDir.x *= -1;
-                WindowEdgeDrawer.OnCollisionBall(WindowEdgeDrawer.WindowEdge.Left);
+                WindowEdgeUpdater.OnCollisionBall(WindowEdgeUpdater.WindowEdge.Left);
                 AudioPlayer.Play(AudioPlayer.ClipName.CollisionFrame);
             }
             
@@ -111,7 +111,7 @@ namespace Editor
             {
                 nextPos.x = (windowSize.x - ballRadius) * 2 - nextPos.x;
                 moveDir.x *= -1;
-                WindowEdgeDrawer.OnCollisionBall(WindowEdgeDrawer.WindowEdge.Right);
+                WindowEdgeUpdater.OnCollisionBall(WindowEdgeUpdater.WindowEdge.Right);
                 AudioPlayer.Play(AudioPlayer.ClipName.CollisionFrame);
             }
 
@@ -119,7 +119,7 @@ namespace Editor
             {
                 nextPos.y = ballRadius * 2 - nextPos.y;
                 moveDir.y *= -1;
-                WindowEdgeDrawer.OnCollisionBall(WindowEdgeDrawer.WindowEdge.Top);
+                WindowEdgeUpdater.OnCollisionBall(WindowEdgeUpdater.WindowEdge.Top);
                 AudioPlayer.Play(AudioPlayer.ClipName.CollisionFrame);
             }
 
@@ -127,7 +127,7 @@ namespace Editor
             {
                 nextPos.y = (windowSize.y - ballRadius) * 2 - nextPos.y;
                 moveDir = Vector2.zero;
-                WindowEdgeDrawer.OnCollisionBall(WindowEdgeDrawer.WindowEdge.Bottom);
+                WindowEdgeUpdater.OnCollisionBall(WindowEdgeUpdater.WindowEdge.Bottom);
                 AudioPlayer.Play(AudioPlayer.ClipName.CollisionFrame);
                 
                 GameStateManager.OnGameOver();

@@ -37,7 +37,9 @@ namespace Editor
                 if(clips.ContainsKey(clipName)) continue;
                 
                 var clipPath = clipPathPair.Value;
+                
                 var clip = (AudioClip)AssetDatabase.LoadAssetAtPath(clipPath, typeof(AudioClip));
+                
                 if(clip == null) continue;
                 clips.Add(clipName, clip);
             }
